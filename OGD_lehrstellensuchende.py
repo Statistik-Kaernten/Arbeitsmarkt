@@ -39,6 +39,8 @@ def main():
         'BESTAND': 'anzahl'
     }, inplace=True)
     
+    df["berufs_6_steller"] = df["berufs_6_steller"].str[-6:]
+
     spalten_behalten = [
         'jahr',
         'monat',
