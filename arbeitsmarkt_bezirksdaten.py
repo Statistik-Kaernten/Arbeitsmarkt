@@ -1,14 +1,25 @@
 import pandas as pd
 import numpy as np
 import requests
+
 from urllib.parse import urlparse
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,text
+
+ZIELTABELLE = "t_arbeitsmarkt_bezirksdaten"
+SCHEMA = "arbeitsmarkt"
+
+DB_CONFIG = {
+    "server": "172.21.203.85",
+    "database": "statistik",
+    "user": "dstabentheiner",
+    "password": "statistik123",
+}
 
 
-engine = create_engine(f'postgresql://msabitzer:dbadmin@172.21.203.85:5432/statistik')
-conn = engine.raw_connection()
-cur = conn.cursor()
+#engine = create_engine(f'postgresql://msabitzer:dbadmin@172.21.203.85:5432/statistik')
+#conn = engine.raw_connection()
+#cur = conn.cursor()
 
 JAHR = '2026' #Hier das gewünschte Jahr eintragen
 
@@ -93,10 +104,14 @@ def amsBezirksdaten():
 
     print(ams_bezirksdaten[spalten_behalten])
 
-    cur.execute(f"TRUNCATE table arbeitsmarkt.t_arbeitsmarkt_bezirksdaten")
-    ams_bezirksdaten.to_sql('t_arbeitsmarkt_bezirksdaten', engine, if_exists="append", index=False, schema='arbeitsmarkt')           
+              
    
+    engine = create_engine(f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['server']}/{DB_CONFIG['database']}")
+    with engine.begin() as conn:
+        conn.execute(text(f"TRUNCATE TABLE {SCHEMA}.{ZIELTABELLE}"))
+        ams_bezirksdaten.to_sql(ZIELTABELLE, conn , if_exists="append", index=False, schema=SCHEMA, method="multi",chunksize=1000)
 
+   
 def getYearMonth(sheet_name):
     sheet_name_lower = sheet_name.lower().strip()
 
@@ -132,7 +147,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    conn.commit()
-    cur.close()
-    conn.close()         
+         
            
