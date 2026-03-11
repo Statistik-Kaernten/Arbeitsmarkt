@@ -4,15 +4,18 @@ import json
 import psycopg2
 from sqlalchemy import create_engine
 from nationen_mapping import nationen_dict
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ZIELTABELLE = "t_beschaeftigte_nationalitaet"
 SCHEMA = "arbeitsmarkt"
 
-DB_CONFIG = {
-    "server": "172.21.203.85",
-    "database": "statistik",
-    "user": "dstabentheiner",
-    "password": "statistik123",}
+DB_USER = os.getenv("user")
+DB_PASSWORD = os.getenv("password")
+DB_SERVER = os.getenv("server")
+DB_NAME = os.getenv("database")
+
 
 pfad = r"W:\STATSICH\Allgemein\Arbeitsmarkt\AMIS\Beschaeftigte_Nationalitaeten_Alter"
 
@@ -73,19 +76,14 @@ def main():
 
             print(df.head())
 
-            engine = create_engine(
-                    f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['server']}/{DB_CONFIG['database']}"
-                )
-            
-            # Prüfen, ob dieser Monat schon in der DB ist
+    # Prüfen, ob dieser Monat schon in der DB ist
             conn = psycopg2.connect(
-                dbname=DB_CONFIG['database'],
-                user=DB_CONFIG['user'],
-                password=DB_CONFIG['password'],
-                host=DB_CONFIG['server']
-            )
+                dbname=DB_NAME,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                host=DB_SERVER)
             cur = conn.cursor()
-            cur.execute(f"SELECT 1 FROM {ZIELTABELLE} WHERE jahr = %s AND monat = %s LIMIT 1", (jahr, monat))    
+            cur.execute(f"SELECT 1 FROM {SCHEMA}.{ZIELTABELLE} WHERE jahr = %s AND monat = %s LIMIT 1", (jahr, monat))    
             exists = cur.fetchone()
             cur.close()
             conn.close()
@@ -94,9 +92,7 @@ def main():
             if exists:
                 print(f"Monat {monat} vom Jahr {jahr} ist bereits vorhanden. Import übersprungen.")
             else:
-                engine = create_engine(
-                    f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['server']}/{DB_CONFIG['database']}"
-                )
+                engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}")
                 df.to_sql(ZIELTABELLE, engine, if_exists="append", index=False, schema=SCHEMA)  
                 print(f"Monat {monat} wurde importiert.")
 
