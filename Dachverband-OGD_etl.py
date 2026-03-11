@@ -6,7 +6,7 @@ import psycopg2
 # Sollte mal ein Monat vergessen worden sein, muss der erforderliche Link für das File unter https://opendata.sozialversicherung.at/dvsv_statistik_beschaeftigte.html in die Variable INPUT_CSV_URL kopiert werden. 
 
 INPUT_CSV_URL = "https://opendata-files.sozialversicherung.at/beschaeftigte/DVSV_Statistik_Beschaeftigte_v202404.csv"
-ZIELTABELLE = "t_dachverband_ogd"
+ZIELTABELLE = "t_beschaeftigte"
 SCHEMA = "arbeitsmarkt"
 
 DB_CONFIG = {
@@ -35,7 +35,7 @@ def main():
         host=DB_CONFIG['server']
     )
     cur = conn.cursor()
-    cur.execute(f"SELECT 1 FROM {ZIELTABELLE} WHERE jahr = %s AND monat = %s LIMIT 1", (jahr, monat))    
+    cur.execute(f"SELECT 1 FROM {SCHEMA}.{ZIELTABELLE} WHERE jahr = %s AND monat = %s LIMIT 1", (jahr, monat))    
     exists = cur.fetchone()
     cur.close()
     conn.close()
