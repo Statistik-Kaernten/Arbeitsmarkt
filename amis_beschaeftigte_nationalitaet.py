@@ -16,7 +16,6 @@ DB_PASSWORD = os.getenv("password")
 DB_SERVER = os.getenv("server")
 DB_NAME = os.getenv("database")
 
-
 pfad = r"W:\STATSICH\Allgemein\Arbeitsmarkt\AMIS\Beschaeftigte_Nationalitaeten_Alter"
 
 def main():
@@ -58,7 +57,6 @@ def main():
 
             df.rename(columns={
                 "Geschlecht": "geschlecht",
-                "Bundesland": "bundesland",
                 "Alter 3-Kategorien": "alterskategorie",
                 "Nationalität": "nationalitaet",
                 "Bestand": "anzahl"
@@ -69,7 +67,7 @@ def main():
             df["iso3_code"] = df["nationalitaet"].map(nationen_dict).fillna("999")
 
             # Spaltenreihenfolge:
-            cols = ["jahr", "monat", "geschlecht", "bundesland", "alterskategorie", "iso3_code", "nationalitaet", "anzahl"]
+            cols = ["jahr", "monat", "geschlecht", "alterskategorie", "iso3_code", "nationalitaet", "anzahl"]
             df = df[cols]
 
             df["anzahl"] = df["anzahl"].astype(int)

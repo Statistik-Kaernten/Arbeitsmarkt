@@ -1,5 +1,9 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Dieses Skript lädt die Arbeitslosen nach Gemeinden herunter und speichert sie in der Datenbank.
 
@@ -7,12 +11,10 @@ INPUT_CSV_URL = "https://www.arbeitsmarktdatenbank.at/opendata/AL_SC_Geschlecht_
 ZIELTABELLE = "t_arbeitslose_gemeinden"
 SCHEMA = "arbeitsmarkt"
 
-DB_CONFIG = {
-    "server": "172.21.203.85",
-    "database": "statistik",
-    "user": "dstabentheiner",
-    "password": "statistik123",
-}
+DB_USER = os.getenv("user")
+DB_PASSWORD = os.getenv("password")
+DB_SERVER = os.getenv("server")
+DB_NAME = os.getenv("database")
 
 def main():
     df = pd.read_csv(INPUT_CSV_URL, delimiter=";", decimal=",", encoding="latin1")            
@@ -51,9 +53,7 @@ def main():
 
     print(df)
 
-    engine = create_engine(
-            f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['server']}/{DB_CONFIG['database']}"
-        )
+    engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}")
     with engine.begin() as conn:
         conn.execute(text(f"TRUNCATE TABLE {SCHEMA}.{ZIELTABELLE}"))
     df.to_sql(ZIELTABELLE, engine, if_exists="append", index=False, schema=SCHEMA)
