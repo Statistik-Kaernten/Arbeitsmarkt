@@ -1,21 +1,19 @@
 import pandas as pd
-import numpy as np
 import requests
-
 from urllib.parse import urlparse
 import os
 from sqlalchemy import create_engine,text
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ZIELTABELLE = "t_arbeitsmarkt_bezirksdaten"
 SCHEMA = "arbeitsmarkt"
 
-DB_CONFIG = {
-    "server": "172.21.203.85",
-    "database": "statistik",
-    "user": "dstabentheiner",
-    "password": "statistik123",
-}
-
+DB_USER = os.getenv("user")
+DB_PASSWORD = os.getenv("password")
+DB_SERVER = os.getenv("server")
+DB_NAME = os.getenv("database")
 
 #engine = create_engine(f'postgresql://msabitzer:dbadmin@172.21.203.85:5432/statistik')
 #conn = engine.raw_connection()
@@ -72,8 +70,7 @@ def amsBezirksdaten():
         daten = pd.DataFrame()
 
 
-    
-    #trennung nach Geschlechtern
+    #Trennung nach Geschlechtern
 
     frauenDaten = daten.iloc[:,[0,2,3,11,12]].copy()
     frauenDaten["geschlecht"] = 'W'
@@ -106,7 +103,7 @@ def amsBezirksdaten():
 
               
    
-    engine = create_engine(f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['server']}/{DB_CONFIG['database']}")
+    engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}")
     with engine.begin() as conn:
         conn.execute(text(f"TRUNCATE TABLE {SCHEMA}.{ZIELTABELLE}"))
         ams_bezirksdaten.to_sql(ZIELTABELLE, conn , if_exists="append", index=False, schema=SCHEMA, method="multi",chunksize=1000)
